@@ -99,6 +99,14 @@ class dispatcher:
                 if os.path.isdir(cache_path_d):
                     list3=revealer.op(cache_path_d)
                     cache_path=cache_path_d
+
+                    if 'entry.json' in list3:
+                        for f3 in list3:
+                            cache_path_d=cache_path_d+"/"+f3
+                            if os.path.isdir(cache_path_d): 
+                                list3=revealer.op(cache_path_d)
+                    
+                    
                     if '0.blv' in list3:
                         cache_type=1
                     elif 'audio.m4s' in list3:
@@ -136,7 +144,7 @@ def transcoder(video_name,cache_path,cache_type,dispatcher):
             trans_m4s.run()
 
 
-def core_process(path_data,list_mission,list_processing,list_completed):
+def core_process(path_data):
 
     if not path_data == []:
 
@@ -146,22 +154,9 @@ def core_process(path_data,list_mission,list_processing,list_completed):
         d.task_scanner(r)
         print('\n',"核心进程获取任务列表","<line148>",'\n',d.list,'\n')
 
-        #初始化窗口任务列表
-        l_m=d.list
-        l_m_txt='\n'.join(a for a in d.list)
-        list_mission.set(l_m_txt)
-        l_p=[]
-        l_c=[]
         for t in d.list:
             cache_list_final=d.cahe_structure(t,d,r)
             print("核心进程获取缓存文件列表","<line158>",'\n',cache_list_final[0],'\n')
-            #更新窗口信息，mission list 传到 processing list
-            l_m.remove(t)
-            l_m_txt='\n'.join(a for a in l_m)
-            list_mission.set(l_m_txt)
-            l_p.append(t)
-            l_p_txt='\n'.join(a for a in l_p)
-            list_processing.set(l_p_txt)
 
             for v in cache_list_final:
                 print(v[0],"开始")
@@ -177,13 +172,6 @@ def core_process(path_data,list_mission,list_processing,list_completed):
             rla.write(v_record)
             rla.close()
 
-            #更新窗口信息，processing list 传到 completed list
-            l_p.remove(t)
-            l_p_txt='\n'.join(a for a in l_p)
-            list_processing.set(l_p_txt)
-            l_c.append(t)
-            l_c_txt='\n'.join(a for a in l_c)
-            list_completed.set(l_c_txt)
 
     else:
         print(path_data,"failed")    
@@ -209,8 +197,7 @@ def main():
             if os.path.isdir(path_s) and os.path.isdir(path_t):
                 path_data=(path_s,path_t)
                 print("窗口获得路径","<line212>",'\n','缓存池：'+path_data[0]+'\n'+'视频池：'+path_data[1],'\n')
-                core_process(path_data,list_mission,list_processing,list_completed)
-        else:
+                core_process(path_data)
             Path.destroy()
 
 
@@ -223,16 +210,13 @@ def main():
     #路径变量
     path1=tk.StringVar()
     path2=tk.StringVar()
-    #总体任务显示
-    list_mission=tk.StringVar()
-    list_completed=tk.StringVar()
-    list_processing=tk.StringVar()
+ 
 
     screenwidth = Path.winfo_screenwidth()
     screenheight = Path.winfo_screenheight()
     # 窗口的大小
     width = 345
-    height = 450
+    height = 150
     # 设置窗口在屏幕居中
     location = "%dx%d+%d+%d" % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
     Path.geometry(location)
@@ -257,20 +241,6 @@ def main():
     Path.rowconfigure(4,weight=1)
     tk.Label(Path,text="=====================================").grid(row=4,column=0,columnspan=3)
     
-    Path.rowconfigure(5,weight=1)
-    tk.Label(Path,text="任务队列:").grid(row=5,column=0)
-    tk.Label(Path,text="正在处理:").grid(row=5,column=1)
-    tk.Label(Path,text="已经完成:").grid(row=5,column=2)
-
-    Path.rowconfigure(6,weight=45)
-    tk.Label(Path,textvariable=list_mission).grid(row=6,column=0)
-    tk.Label(Path,textvariable=list_processing).grid(row=6,column=1)
-    tk.Label(Path,textvariable=list_completed).grid(row=6,column=2)
-
-    Path.rowconfigure(7,weight=1)
-    tk.Label(Path,text="=====================================").grid(row=7,column=0,columnspan=3)
-    
-
 
     Path.mainloop()
 
